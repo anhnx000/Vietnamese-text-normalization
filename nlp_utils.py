@@ -136,6 +136,8 @@ def chuan_hoa_dau_tu_tieng_viet(word):
             chars[index] = bang_nguyen_am[x][0]
         if not qu_or_gi or index != 1:
             nguyen_am_index.append(index)
+
+            
     if len(nguyen_am_index) < 2:
         if qu_or_gi:
             if len(chars) == 2:
