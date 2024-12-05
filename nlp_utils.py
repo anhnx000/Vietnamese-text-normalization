@@ -215,12 +215,145 @@ def chuan_hoa_dau_cau_tieng_viet(sentence):
     End section: Chuyển câu văn về cách gõ dấu kiểu cũ: dùng òa úy thay oà uý
     Xem tại đây: https://vi.wikipedia.org/wiki/Quy_t%E1%BA%AFc_%C4%91%E1%BA%B7t_d%E1%BA%A5u_thanh_trong_ch%E1%BB%AF_qu%E1%BB%91c_ng%E1%BB%AF
 """
+
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
+        
+def clean_product_name_function(text):
+    
+    # # lower case
+    # text = re.sub(r'\(\)\{\}\,\/\.\[\]_', '', text.lower())
+    # # remove \ character 
+    # text = re.sub(r'\\', '', text)
+        # lower case
+    
+    # text = TTSnorm(text, punc = False, unknown = False, lower = True, rule = False)
+    
+    # text = text.lower()
+
+    # # Replace values in 'main_data' using 'name_replace_dict', replace the value with the key if the value is in the list of values
+    # for key, value in revert_dict.items():
+    #     if key in text:
+    #         text = text + " " + value
+    #         # text = value + " " + text
+    #         break 
+    
+    # lower text
+    text = text.lower()
+      
+    # Sử dụng regex để xóa bỏ các cụm từ trong dấu ngoặc vuông hoặc ngoặc tròn
+    text = convertwindown1525toutf8(text)
+    text = text.strip()
+    
+    p = random.random()
+    if p < 0.5:
+        text = re.sub(r'[\[\(].*?[\]\)]', '', text) # Remove text in brackets
+    
+    # Replace using the corresponding Python regex
+    
+    text = text.replace('(', '').replace(')', '').replace('{', '').replace('}', '').replace(',', ' ').replace('/', ' ').replace('.', '').replace('[', ' ').replace(']', '').replace('_', ' ').replace('-', ' ')
+    text = text.replace('&', '').replace('?', ' ').replace(';', ' ').replace('=', ' ').replace('*', '').replace('$', ' ').replace('#', ' ').replace('@', ' ').replace('^', ' ').replace('~', ' ').replace('`', ' ').replace('|', ' ').replace('>', ' ').replace('<', ' ').replace('\"', ' ')
+    text = text.replace('\"','')
+    text = text.replace('\\', '').replace('—', '').replace('ml +','ml ').replace('ml+', 'ml ').replace('ml + ', 'ml').replace('+ + + +','+++')
+    
+    # remove emoji
+    text = remove_emoji(text)
+    
+    # Normalize the text using the 'text_normalize' function from the 'underthesea' library
+    # return text_normalize(text
+    
+        
+    # remove stop words
+    text = ' '.join([word for word in text.split() if word not in stop_words])
+    
+    text = text.replace(r"/[^{L}a-z][^a-z]*/gui", '') 
+    
+    text = chuan_hoa_dau_cau_tieng_viet(text)
+    
+    text =  augment_product_name_function(text)
+    return text
+
+    
+import nlpaug.augmenter.word as naw 
+import random
+import nlpaug.augmenter.char as nac
+
+
+
+
+
+def augment_product_name_function(text, 
+                                  p_shuffle_all_text = 0.2, 
+                                  p_swap_word = 0.9, 
+                                  p_add_stop_word = 0.7,
+                                  p_delete_word = 0.7,
+                                  p_ocr = 0.2
+                    ):
+    p_all = random.random()
+    if p_all < 0.5:     
+        # random add a stop word between words
+        text = text.split()
+        
+        # random index insert stop word
+        index_random = random.randint(0, len(text))
+        if random.random() < p_add_stop_word:
+            text.insert(index_random, random.choice(stop_words))
+
+        # random p 
+        p = random.random()
+        if p < p_shuffle_all_text: 
+            # random shuffle words
+            random.shuffle(text)
+        text = ' '.join(text)    
+        
+        p = random.random()
+        if p < p_swap_word:
+            aug = naw.RandomWordAug(action="swap")
+            text = aug.augment(text)    
+            text = ' '.join(text)
+        
+        p = random.random()
+        if p < p_delete_word:
+            if random.random() < 0.7:
+                aug = naw.RandomWordAug(action="delete")
+                text = aug.augment(text)
+                text = ' '.join(text)
+            else:
+                aug = naw.RandomWordAug(action="crop")
+                text = aug.augment(text)
+                text = ' '.join(text)
+            
+        p = random.random()
+        if p < p_ocr:
+            aug = nac.OcrAug()
+            text = aug.augment(text)
+            text = ' '.join(text)
+        
+    return text
+
+
 if __name__ == '__main__':
-    # with open('C:/Users/htv/Desktop/testunicode.txt') as f:
-    #     content = f.read()
-    #     output = decodetounicode(content)
-    #     wirtefile('C:/Users/htv/Desktop/unicode.txt', output)
-    txt = 'nếu ngày mai trời nắng'
-    # print(is_valid_vietnam_word(txt))
-    txt = chuan_hoa_dau_cau_tieng_viet(txt)
-    print(txt)
+    print("Đây là repo clean text Tiếng Việt")
